@@ -207,12 +207,10 @@ function! GetTeXIndent() " {{{
         return indent(v:lnum)
     endif
 
-    " Add a 'shiftwidth' after beginning of environments.
-    " Don't add it for \begin{document} and \begin{verbatim}
-    ""if line =~ '^\s*\\begin{\(.*\)}'  && line !~ 'verbatim' 
-    " LH modification : \begin does not always start a line
-    " ZYC modification : \end after \begin won't cause wrong indent anymore
-    if line =~ '\\begin{.*}' && line !~ g:tex_noindent_env
+    " Add a 'shiftwidth' after beginning of environments
+    " But don't do it for g:tex_noindent_env or when it also ends at the
+    " previous line.
+    if line =~ '\\begin{.*}'  && line !~ '\\end{.*}' && line !~ g:tex_noindent_env
         let ind = ind + shiftwidth()
         let stay = 0
 
