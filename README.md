@@ -1,2 +1,5 @@
 # vim-tex-indent
-official Vim indent file for tex
+Official Vim indent script for tex
+
+# License
+The Vim License applies. See `:h license`
