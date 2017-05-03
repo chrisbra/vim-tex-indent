@@ -1,15 +1,16 @@
-" Vim indent file
+" Vim indent file for TeX
 " Language:             TeX
 " Maintainer:           Christian Brabandt <cb@256bit.org>
 " Previous Maintainer:  YiChao Zhou <broken.zhou AT gmail.com>
-" Latest Revision:      2017-05-02
-" Version:              0.9.2
+" Latest Revision:      2017-05-03
+" Version:              0.9.3
 " Repository:           https://github.com/chrisbra/vim-tex-indent
+" Documention:          :h ft-tex-indent
 " Created:              Sat, 16 Feb 2002 16:50:19 +0100
 "   Please email me if you found something I can do.  Comments, bug report and
 "   feature request are welcome.
 
-" Last Update:  {{{
+" Last Update:  {{{1
 "               25th Sep 2002, by LH :
 "               (*) better support for the option
 "               (*) use some regex instead of several '||'.
@@ -61,78 +62,21 @@
 "               (*) Indent current line if last line has larger indentation
 "               2014/08/09 by Zhou Yichao <broken.zhou AT gmail.com>
 "               (*) Add missing return value for s:GetEndIndentation(...)
+"               2017/05/02: new maintainer Christian Brabandt
+"               2017/05/02: use shiftwidth() function
+"               2017/05/02: do not add indent when environment starts and ends
+"                           at previous line
+"               2017/05/03: release 0.9.3 submitted for inclusion with Vim
 "
 " }}}
-
-" Document: {{{
-"
-" To set the following options (ok, currently it's just one), add a line like
-"   let g:tex_indent_items = 1
-" to your ~/.vimrc.
-"
-" * g:tex_indent_brace
-"
-"   If this variable is unset or non-zero, it will use smartindent-like style
-"   for "{}" and "[]".  Now this only works if the open brace is the last
-"   character of that line.
-"
-"         % Example 1
-"         \usetikzlibrary{
-"           external
-"         }
-"
-"         % Example 2
-"         \tikzexternalize[
-"           prefix=tikz]
-"   
-" * g:tex_indent_items
-"
-"   If this variable is set, item-environments are indented like Emacs does
-"   it, i.e., continuation lines are indented with a shiftwidth.
-"   
-"   NOTE: I've already set the variable below; delete the corresponding line
-"   if you don't like this behaviour.
-"
-"   Per default, it is unset.
-"   
-"              set                                unset
-"   ----------------------------------------------------------------
-"       \begin{itemize}                      \begin{itemize}  
-"         \item blablabla                      \item blablabla
-"           bla bla bla                        bla bla bla  
-"         \item blablabla                      \item blablabla
-"           bla bla bla                        bla bla bla  
-"       \end{itemize}                        \end{itemize}    
-"
-"
-" * g:tex_items
-"
-"   A list of tokens to be considered as commands for the beginning of an item 
-"   command. The tokens should be separated with '\|'. The initial '\' should 
-"   be escaped. The default is '\\bibitem\|\\item'.
-"
-" * g:tex_itemize_env
-" 
-"   A list of environment names, separated with '\|', where the items (item 
-"   commands matching g:tex_items) may appear. The default is 
-"   'itemize\|description\|enumerate\|thebibliography'.
-"
-" * g:tex_noindent_env
-"
-"   A list of environment names. separated with '\|', where no indentation is 
-"   required. The default is 'document\|verbatim'.
-" }}} 
-
-" Only define the function once
+" Only define the function once {{{1
 if exists("b:did_indent")
     finish
 endif
 
 let s:cpo_save = &cpo
 set cpo&vim
-
-" Define global variable {{{
-
+" Define global variable {{{1
 let b:did_indent = 1
 
 if !exists("g:tex_indent_items")
@@ -158,17 +102,17 @@ endif
 if !exists("g:tex_noindent_env")
     let g:tex_noindent_env = 'document\|verbatim\|lstlisting'
 endif "}}}
-
-" VIM Setting " {{{
+" VIM Setting " {{{1
 setlocal autoindent
 setlocal nosmartindent
 setlocal indentexpr=GetTeXIndent()
 setlocal indentkeys&
 exec 'setlocal indentkeys+=[,(,{,),},],\&' . substitute(g:tex_items, '^\|\(\\|\)', ',=', 'g')
 let g:tex_items = '^\s*' . substitute(g:tex_items, '^\(\^\\s\*\)*', '', '')
-" }}}
 
-function! GetTeXIndent() " {{{
+let b:undo_indent = 'setlocal indentexpr< indentkeys< smartindent< autoindent<'
+" }}}
+function! GetTeXIndent() " {{{1
     " Find a non-blank line above the current line.
     let lnum = prevnonblank(v:lnum - 1)
     let cnum = v:lnum
@@ -298,8 +242,7 @@ function! GetTeXIndent() " {{{
         return ind
     endif
 endfunction "}}}
-
-function! s:GetLastBeginIndentation(lnum) " {{{
+function! s:GetLastBeginIndentation(lnum) " {{{1
     let matchend = 1
     for lnum in range(a:lnum-1, max([a:lnum - g:tex_max_scan_line, 1]), -1)
         let line = getline(lnum)
@@ -322,7 +265,7 @@ function! s:GetLastBeginIndentation(lnum) " {{{
     return -1
 endfunction
 
-function! s:GetEndIndentation(lnum) " {{{
+function! s:GetEndIndentation(lnum) " {{{1
     if getline(a:lnum) =~ '\\begin{.*}.*\\end{.*}'
         return -1
     endif
@@ -403,8 +346,8 @@ function! s:CheckPairedIsLastCharacter(lnum, col) "{{{
     endif
 
     return 0
-endfunction "}}}
-
+endfunction
+" Reset cpo setting {{{1
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
