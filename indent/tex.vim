@@ -10,6 +10,9 @@
 "   Please email me if you found something I can do.  Comments, bug report and
 "   feature request are welcome.
 
+echoerr "unofficial Vim Tex indent file!"
+finish
+
 " Last Update:  {{{1
 "               25th Sep 2002, by LH :
 "               (*) better support for the option
